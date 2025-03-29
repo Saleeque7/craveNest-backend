@@ -77,5 +77,78 @@ export const userUseCase = {
             }
         }
         return { executeFunction }
-    }
+    },
+    updateProfileUsecase: (dependencies) => {
+        const { repositories: { userRepository: { updateUserProfile } } } = dependencies
+        const executeFunction = async (id ,name , email) => {
+            try {
+                const user = await updateUserProfile(id , name , email)
+                if (!user) {
+                    throw new Error('Failed to update user');
+                }
+
+
+                return user
+            } catch (error) {
+                throw error
+            }
+        }
+        return { executeFunction }
+    },
+    changeEmailUsecase: (dependencies) => {
+        const { repositories: { userRepository: { finduserByEmail , changeEmailUsecaseRepo } } } = dependencies
+        const executeFunction = async ( email) => {
+            try {
+                const existingUser = await finduserByEmail(email)
+                if (existingUser) {
+                    throw new ValidationError("email already in use .");
+                }
+                const otpexist = await otpExist(email)
+                if (otpexist) {
+                    throw new ValidationError("An OTP has already been sent");
+                }
+                const cooldown = await checkCooldown(email)
+
+                if (cooldown) {
+                    throw new ValidationError("Please wait before requesting another OTP.");
+                }
+
+                const message = `Email change  verification`
+                const otp = await sendVerifyMail(email, message)
+                console.log(otp);
+
+                if (otp) {
+                    await saveOTP(email, otp);
+                    return;
+                } else {
+                    throw new ValidationError("Failed to generate OTP. Please try again.");
+
+                }
+            } catch (error) {
+                throw error
+            }
+        }
+        return { executeFunction }
+    }, 
+    verifyotpUsecase: (dependencies) => {
+    
+        const executeFunction = async ( email ,otp) => {
+            try {
+                const match = await verifyOTP(email, otp)
+                if (!match.success) {
+                    throw new ValidationError(match.message);
+                }
+                await deleteOTP(email)
+              
+               
+
+                return ;
+
+            } catch (error) {
+                throw error;
+            }
+
+        }
+        return { executeFunction }
+    },
 }

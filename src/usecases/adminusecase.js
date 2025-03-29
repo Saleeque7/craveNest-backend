@@ -1,4 +1,3 @@
-import { generateToken } from "../helpers/generateToken.js"
 export const adminUsecase = {
     verifyLoginUsecase: (dependencies) => {
         const { repositories: { adminRepository: { findAdminByEmail } } } = dependencies
@@ -9,9 +8,7 @@ export const adminUsecase = {
                     throw new Error('incorrect email');
                 }
 
-                const token = await generateToken(admin._id)
-
-                return { admin, token }
+                return  admin 
             } catch (error) {
                 throw error
             }

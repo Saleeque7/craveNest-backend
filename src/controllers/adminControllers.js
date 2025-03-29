@@ -1,3 +1,4 @@
+import { generateToken } from "../helpers/generateToken.js"
 import { NotFoundError, ValidationError } from "../utils/middlewares/errorInstances.js"
 export const adminControllers = (dependencies) => {
     return {
@@ -9,13 +10,13 @@ export const adminControllers = (dependencies) => {
                     throw new ValidationError("Email is required.");
                 }
                 const { executeFunction } = await verifyLoginUsecase(dependencies)
-                const { admin, token } = await executeFunction(email)
-
+                const admin  = await executeFunction(email)
+                const { accessToken } = await generateToken(res, admin._id, "admin")
                 return res.status(201).json({
                     success: true,
                     message: "success",
                     admin: admin,
-                    token: token
+                    token: accessToken
                 });
 
             } catch (error) {
@@ -83,7 +84,7 @@ export const adminControllers = (dependencies) => {
                 if (!name || !name.trim()) {
                     throw new ValidationError("category name  is required.");
                 }
-                
+
                 const { executeFunction } = await addCategoryUsecase(dependencies)
                 const result = await executeFunction(name, parentId)
 
@@ -112,9 +113,9 @@ export const adminControllers = (dependencies) => {
             }
         },
         updateCategory: async (req, res, next) => {
-            console.log(req.params,"params");
-            console.log(req.body,"params");
-            
+            console.log(req.params, "params");
+            console.log(req.body, "params");
+
             const { id } = req.params;
             const { name, parentId } = req.body;
             const { useCases: { adminUsecase: { updateCategoryUsecase } } } = dependencies;
@@ -126,7 +127,7 @@ export const adminControllers = (dependencies) => {
                     throw new ValidationError("category name  is not avialable");
                 }
 
-                
+
 
                 const { executeFunction } = await updateCategoryUsecase(dependencies)
                 const updatedCategory = await executeFunction(id, name, parentId)

@@ -1,11 +1,11 @@
 
 import jwt from "jsonwebtoken";
 import config from "../config/config.js";
-import { saveRefreshToken } from "./redisTokenSetup.js";
 
+ 
 const generateAccessToken = (data) => {
     return jwt.sign({ data }, config.JWT_SECRET, {
-        expiresIn: "1m",
+        expiresIn: "1d",
     });
 };
 const generateRefreshToken = (data) => {
@@ -13,18 +13,25 @@ const generateRefreshToken = (data) => {
         expiresIn: "30d",
     });
 };
-export const generateToken = async( data) => {
+export const generateToken = (res, data ,userRole) => {
 
     const payLoad = {
         id: data,
+        role: userRole,
     }
-    console.log(payLoad, "pay");
+    console.log(payLoad);
 
 
-    const accessToken = await generateAccessToken(payLoad);
-    const refreshToken = await generateRefreshToken(payLoad);
+    const accessToken = generateAccessToken(payLoad);
+    const refreshToken = generateRefreshToken(payLoad);
 
-    await saveRefreshToken(payLoad,refreshToken)
+    res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure:true,
+        sameSite: 'Strict',    
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+        path: '/'
+    })
 
     return {
         accessToken
