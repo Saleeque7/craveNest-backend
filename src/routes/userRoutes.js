@@ -9,7 +9,9 @@ export const userRoutes = (dependencies)=>{
     router.post('/register',registerUser)
     router.post('/verify',verifyRegisteration)
     router.post('/signin',siginController)
+
     router.post('/refresh',refreshTOken)
+    
     router.post('/update-profile',verifyToken,updateProfileController)
     router.post('/send-email-verification',verifyToken,verifyEmail)
     router.post('/verify-otp',verifyToken,verifyOtp)
